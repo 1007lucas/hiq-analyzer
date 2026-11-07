@@ -115,4 +115,11 @@ export function Stat({ label, value, sub, tone = '' }) {
   );
 }
 
-export const statusTone = (s) => ({ 재원: 'green', 휴원: 'amber', 퇴원: 'gray', 재직: 'green', 휴직: 'amber', 퇴직: 'gray', 완납: 'green', 부분납: 'amber', 미납: 'red', 출석: 'green', 지각: 'amber', 결석: 'red', 조퇴: 'blue' }[s] || 'navy');
+export const statusTone = (s) => ({
+  재직: 'green', 휴직: 'amber', 퇴직: 'gray',
+  정상: 'green', 지각: 'amber', 조퇴: 'blue', 결근: 'red', 휴가: 'gold', 외근: 'navy',
+  대기: 'amber', 승인: 'green', 반려: 'red',
+  지급완료: 'green', 미지급: 'red',
+  진행중: 'green', 만료임박: 'amber', 만료: 'gray', 해지: 'red',
+  정규직: 'navy', 계약직: 'blue', 시간강사: 'gold', 프리랜서: 'amber',
+}[s] || 'navy');

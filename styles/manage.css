@@ -143,3 +143,5 @@
   .mg-header,.mg-side,.mg-toolbar,.mg-btn,.mg-table .actions{display:none!important;}
   .mg-content{padding:0;}
 }
+.mg-att-row .mg-input[type=time]{background:#fff;}
+@media print{ .mg-modal-bg{position:static;background:none;padding:0;} .mg-modal{box-shadow:none;max-width:none;border:none;} .mg-modal-head,.mg-modal-foot{display:none;} }

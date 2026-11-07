@@ -4,25 +4,22 @@ import { useCallback, useEffect, useState } from 'react';
 import { useAcademy } from '../../lib/academyStore';
 import { ManageCtx } from '../../components/manage/ui';
 import Dashboard from '../../components/manage/Dashboard';
-import Students from '../../components/manage/Students';
-import Classes from '../../components/manage/Classes';
-import Teachers from '../../components/manage/Teachers';
-import Attendance from '../../components/manage/Attendance';
-import Payments from '../../components/manage/Payments';
-import Counseling from '../../components/manage/Counseling';
+import Employees from '../../components/manage/Employees';
+import Work from '../../components/manage/Work';
+import Leaves from '../../components/manage/Leaves';
+import Payroll from '../../components/manage/Payroll';
+import Contracts from '../../components/manage/Contracts';
 import Settings from '../../components/manage/Settings';
 
 const NAV = [
   { sec: '현황' },
   { key: 'dashboard', label: '대시보드', ico: '📊', C: Dashboard },
-  { sec: '학생' },
-  { key: 'students', label: '학생 관리', ico: '🎓', C: Students },
-  { key: 'attendance', label: '출결 관리', ico: '✅', C: Attendance },
-  { key: 'counseling', label: '상담 기록', ico: '💬', C: Counseling },
-  { sec: '운영' },
-  { key: 'classes', label: '반 · 수업 관리', ico: '🏫', C: Classes },
-  { key: 'teachers', label: '강사 관리', ico: '👩‍🏫', C: Teachers },
-  { key: 'payments', label: '학원비 수납', ico: '💳', C: Payments },
+  { sec: '인사' },
+  { key: 'employees', label: '직원 정보', ico: '👥', C: Employees },
+  { key: 'work', label: '근태 관리', ico: '⏰', C: Work },
+  { key: 'leaves', label: '휴가 관리', ico: '🏖️', C: Leaves },
+  { key: 'payroll', label: '급여 관리', ico: '💰', C: Payroll },
+  { key: 'contracts', label: '계약 관리', ico: '📝', C: Contracts },
   { sec: '기타' },
   { key: 'settings', label: '설정 · 백업', ico: '⚙️', C: Settings },
 ];
@@ -44,7 +41,7 @@ export default function ManagePage() {
   return (
     <ManageCtx.Provider value={{ notify, go }}>
       <Head>
-        <title>학원 관리 시스템 · {settings.academyName || 'HIQ입시학원'}</title>
+        <title>인사 관리 시스템 · {settings.academyName || 'HIQ입시학원'}</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </Head>
       <div className="mg">
@@ -53,7 +50,7 @@ export default function ManagePage() {
             <button className="mg-menu-btn" onClick={() => setMenuOpen((v) => !v)} aria-label="메뉴">☰</button>
             <Link href="/manage" className="mg-logo">
               <div className="mg-logo-mark">HIQ</div>
-              <div className="mg-logo-text">학원 관리 시스템<span className="mg-logo-sub">{settings.academyName || 'HIQ입시학원'}</span></div>
+              <div className="mg-logo-text">인사 관리 시스템<span className="mg-logo-sub">{settings.academyName || 'HIQ입시학원'}</span></div>
             </Link>
           </div>
           <div className="mg-header-right">

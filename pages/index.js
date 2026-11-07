@@ -327,7 +327,7 @@ ${rawJSON}
           </div>
         </div>
         <div style={{display:'flex',alignItems:'center',gap:10}}>
-          <a href="/manage" className="badge" style={{textDecoration:'none'}}>학원 관리 시스템 →</a>
+          <a href="/manage" className="badge" style={{textDecoration:'none'}}>인사 관리 시스템 →</a>
           <div className="badge">BETA</div>
         </div>
       </header>
