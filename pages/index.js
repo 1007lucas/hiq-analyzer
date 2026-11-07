@@ -1,4 +1,5 @@
 import Head from 'next/head';
+import Link from 'next/link';
 import { useState, useRef } from 'react';
 
 export default function Home() {
@@ -242,7 +243,7 @@ ${rawJSON}
         <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;900&display=swap" rel="stylesheet" />
       </Head>
 
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         :root{--navy:#1F3864;--navy2:#15264A;--navylt:#2a4a80;--gold:#B08A2E;--goldl:#D8C28A;--goldfaint:#f5efd6;--paper:#F8F7F3;--white:#ffffff;--ink:#1a1a1a;--gray:#6b7280;--graylt:#e5e7eb;--red:#B23A2E;--redfaint:#fdf2f0;--green:#1a6b3a;--greenfaint:#f0faf4;--border:#d1d5db;}
         *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
         body{font-family:'Noto Sans KR','Malgun Gothic',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;line-height:1.65;}
@@ -251,6 +252,8 @@ ${rawJSON}
         .logo-mark{width:34px;height:34px;background:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;color:var(--navy2);letter-spacing:.04em;}
         .logo-text{color:#fff;font-weight:700;font-size:15px;}
         .logo-sub{color:var(--goldl);font-size:11px;font-weight:400;display:block;margin-top:-2px;}
+        .nav-link{color:#fff;text-decoration:none;font-size:13px;font-weight:600;padding:6px 12px;border:1px solid rgba(255,255,255,.25);}
+        .nav-link:hover{background:rgba(255,255,255,.1);}
         .badge{font-size:11px;color:var(--goldl);border:1px solid rgba(216,194,138,.4);padding:3px 10px;letter-spacing:.06em;}
         .main{max-width:900px;margin:0 auto;padding:32px 20px 80px;}
         .card{background:var(--white);border:1px solid var(--border);border-top:3px solid var(--navy);padding:24px;margin-bottom:22px;box-shadow:0 2px 12px rgba(31,56,100,.10);}
@@ -315,7 +318,7 @@ ${rawJSON}
         .divider{height:1px;background:var(--graylt);margin:20px 0;}
         .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 22px;font-size:13.5px;font-weight:600;box-shadow:0 8px 32px rgba(31,56,100,.16);z-index:999;pointer-events:none;}
         @media(max-width:600px){.opts{grid-template-columns:1fr 1fr;}.opts .og:last-child{grid-column:1/-1;}header{padding:0 14px;}.main{padding:20px 12px 60px;}}
-      `}</style>
+      ` }} />
 
       <header>
         <div className="logo">
@@ -325,7 +328,10 @@ ${rawJSON}
             <span className="logo-sub">HIQ입시학원 · 영어교육연구소</span>
           </div>
         </div>
-        <div className="badge">BETA</div>
+        <div style={{display:'flex',alignItems:'center',gap:10}}>
+          <Link href="/cover" className="nav-link">표지 디자이너 →</Link>
+          <div className="badge">BETA</div>
+        </div>
       </header>
 
       <div className="main">

@@ -8,7 +8,9 @@
     "start": "next start"
   },
   "dependencies": {
+    "html-to-image": "^1.11.13",
     "next": "14.2.3",
+    "pdfjs-dist": "^3.11.174",
     "react": "^18",
     "react-dom": "^18"
   }
