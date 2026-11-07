@@ -80,6 +80,29 @@ npm run dev
 | 계약 관리 | 근로·위촉 계약 기간과 조건 관리, 만료 30일 전 알림(D-day), 1년 갱신 계약 생성, 계약 없는 재직자 표시 |
 | 설정 · 백업 | 학원 이름, 기준 출퇴근 시각, 기본 연차 일수, 4대보험 요율, JSON 백업/복원, 샘플 데이터, 초기화 |
 
+### 💻 PC 설치 프로그램으로 쓰기 (Windows / macOS)
+
+웹 배포 없이 **설치해서 쓰는 프로그램**으로도 만들 수 있습니다. (Electron 기반, 인터넷 연결 불필요)
+
+**방법 A — GitHub에서 자동으로 설치 파일 받기 (추천)**
+1. GitHub 저장소 → **Actions** 탭 → **Desktop Build** → **Run workflow** 클릭
+2. 몇 분 뒤 완료되면 하단 **Artifacts** 에서 `windows-installer` (`.exe`) 또는 `macos-dmg` (`.dmg`) 다운로드
+3. 압축을 풀고 설치 파일 실행 → 바탕화면의 **HIQ 인사 관리** 아이콘으로 실행
+- `v1.0.0` 처럼 `v`로 시작하는 태그를 푸시하면 **Releases** 페이지에 설치 파일이 자동 첨부됩니다.
+- 서명되지 않은 앱이므로 Windows SmartScreen 경고가 뜨면 "추가 정보 → 실행", macOS는 "시스템 설정 → 개인정보 보호 및 보안 → 그래도 열기"를 선택하세요.
+
+**방법 B — 내 PC에서 직접 빌드**
+```bash
+npm install
+npm run desktop:build:win   # Windows 설치 파일 → dist/HIQ-인사관리-Setup-1.0.0.exe
+npm run desktop:build:mac   # macOS 디스크 이미지 → dist/HIQ-인사관리-1.0.0-arm64.dmg (Mac에서만)
+npm run desktop:dev         # 설치 없이 바로 실행해 보기
+```
+
+- 데스크톱 프로그램의 데이터는 그 PC 안에 저장됩니다. (도움말 → 사용 안내에서 저장 위치 확인)
+- 데스크톱 버전에는 인사 관리 시스템만 포함되며, 지문 분석기는 웹(Vercel)에서 사용합니다.
+- Vercel 빌드 시간을 줄이려면 Vercel 환경변수에 `ELECTRON_SKIP_BINARY_DOWNLOAD=1` 을 추가하세요.
+
 ### 데이터 저장 방식 (⚠️ 꼭 읽어주세요)
 - 모든 데이터는 **접속한 브라우저의 저장소(localStorage)** 에만 저장됩니다. 별도 서버·DB 설정이 필요 없어 Vercel 배포만으로 바로 쓸 수 있습니다.
 - 따라서 **다른 PC나 휴대폰에서는 데이터가 공유되지 않으며**, 브라우저 데이터를 지우면 사라집니다.

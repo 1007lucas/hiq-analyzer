@@ -31,7 +31,13 @@ export default function ManagePage() {
   const [toast, setToast] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); const h = window.location.hash.slice(1); if (NAV.some((n) => n.key === h)) setTab(h); }, []);
+  useEffect(() => {
+    setMounted(true);
+    const apply = () => { const h = window.location.hash.slice(1); if (NAV.some((n) => n.key === h)) { setTab(h); setParams(null); } };
+    apply();
+    window.addEventListener('hashchange', apply);
+    return () => window.removeEventListener('hashchange', apply);
+  }, []);
 
   const notify = useCallback((msg) => { setToast(msg); setTimeout(() => setToast(''), 2600); }, []);
   const go = useCallback((key, p = null) => { setTab(key); setParams(p); setMenuOpen(false); if (typeof window !== 'undefined') window.history.replaceState(null, '', '#' + key); window.scrollTo(0, 0); }, []);
@@ -54,7 +60,7 @@ export default function ManagePage() {
             </Link>
           </div>
           <div className="mg-header-right">
-            <Link href="/" className="mg-link">지문 분석기 →</Link>
+            {process.env.NEXT_PUBLIC_DESKTOP ? <span className="mg-link" style={{ cursor: 'default' }}>데스크톱</span> : <Link href="/" className="mg-link">지문 분석기 →</Link>}
           </div>
         </header>
         <div className="mg-layout">
