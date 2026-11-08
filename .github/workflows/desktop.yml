@@ -1,0 +1,43 @@
+# 데스크톱 설치 파일 자동 빌드
+# - Actions 탭에서 "Run workflow" 로 수동 실행하거나, v1.0.0 같은 태그를 푸시하면 실행됩니다.
+# - 결과물: Windows 설치 파일(.exe), macOS 디스크 이미지(.dmg) → Artifacts / Releases 에서 다운로드
+name: Desktop Build
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            script: desktop:build:win
+            artifact: windows-installer
+            glob: dist/*.exe
+          - os: macos-latest
+            script: desktop:build:mac
+            artifact: macos-dmg
+            glob: dist/*.dmg
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run ${{ matrix.script }}
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.glob }}
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ matrix.glob }}

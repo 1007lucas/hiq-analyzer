@@ -5,11 +5,75 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "desktop:export": "cross-env DESKTOP_BUILD=1 next build",
+    "desktop:dev": "npm run desktop:export && electron .",
+    "desktop:build": "npm run desktop:export && electron-builder",
+    "desktop:build:win": "npm run desktop:export && electron-builder --win",
+    "desktop:build:mac": "npm run desktop:export && electron-builder --mac"
   },
   "dependencies": {
     "next": "14.2.3",
+    "pdfjs-dist": "^3.11.174",
     "react": "^18",
     "react-dom": "^18"
-  }
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "electron": "^33.4.11",
+    "electron-builder": "^25.1.8"
+  },
+  "description": "HIQ입시학원 지문 분석기 + 인사 관리 시스템",
+  "main": "electron/main.js",
+  "build": {
+    "appId": "kr.hiq.hr",
+    "productName": "HIQ 인사 관리 시스템",
+    "copyright": "HIQ입시학원",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "electron/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "out",
+        "to": "out"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "HIQ-인사관리-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "HIQ 인사 관리",
+      "language": "1042"
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.business",
+      "artifactName": "HIQ-인사관리-${version}-${arch}.${ext}"
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Office"
+    }
+  },
+  "author": "HIQ입시학원"
 }
