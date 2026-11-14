@@ -242,7 +242,7 @@ ${rawJSON}
         <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;900&display=swap" rel="stylesheet" />
       </Head>
 
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         :root{--navy:#1F3864;--navy2:#15264A;--navylt:#2a4a80;--gold:#B08A2E;--goldl:#D8C28A;--goldfaint:#f5efd6;--paper:#F8F7F3;--white:#ffffff;--ink:#1a1a1a;--gray:#6b7280;--graylt:#e5e7eb;--red:#B23A2E;--redfaint:#fdf2f0;--green:#1a6b3a;--greenfaint:#f0faf4;--border:#d1d5db;}
         *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
         body{font-family:'Noto Sans KR','Malgun Gothic',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;line-height:1.65;}
@@ -315,7 +315,7 @@ ${rawJSON}
         .divider{height:1px;background:var(--graylt);margin:20px 0;}
         .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 22px;font-size:13.5px;font-weight:600;box-shadow:0 8px 32px rgba(31,56,100,.16);z-index:999;pointer-events:none;}
         @media(max-width:600px){.opts{grid-template-columns:1fr 1fr;}.opts .og:last-child{grid-column:1/-1;}header{padding:0 14px;}.main{padding:20px 12px 60px;}}
-      `}</style>
+      ` }} />
 
       <header>
         <div className="logo">
@@ -325,7 +325,10 @@ ${rawJSON}
             <span className="logo-sub">HIQ입시학원 · 영어교육연구소</span>
           </div>
         </div>
-        <div className="badge">BETA</div>
+        <div style={{display:'flex',alignItems:'center',gap:12}}>
+          <a href="/finance" style={{color:'var(--goldl)',fontSize:12.5,fontWeight:600,textDecoration:'none'}}>재무 비서 →</a>
+          <div className="badge">BETA</div>
+        </div>
       </header>
 
       <div className="main">
