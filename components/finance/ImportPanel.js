@@ -54,8 +54,8 @@ export default function ImportPanel({ onImport, existingKeys, hint }) {
           onDragLeave={() => setOver(false)}
           onDrop={(e) => { e.preventDefault(); setOver(false); handleFile(e.dataTransfer.files[0]); }}
         >
-          <div style={{ fontSize: 30, marginBottom: 6 }}>📥</div>
-          <div style={{ fontSize: 14 }}><strong style={{ color: 'var(--navy)' }}>거래내역 파일을 드래그</strong>하거나 클릭해서 선택</div>
+          <div className="drop-ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M12 16V4" /><path d="M7 9l5-5 5 5" /><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" /></svg></div>
+          <div style={{ fontSize: 15, fontWeight: 600 }}>거래내역 파일을 드래그하거나 <span style={{ color: 'var(--primary)' }}>클릭해서 선택</span></div>
           <div className="note" style={{ marginTop: 6 }}>
             은행·카드사 홈페이지/앱에서 내려받은 엑셀(xlsx·xls)·CSV 파일. {hint || ''}<br />
             파일은 브라우저에서만 처리되며 서버로 업로드되지 않습니다. (AI 분류 시 거래 내용·금액만 전송)
@@ -90,7 +90,7 @@ export default function ImportPanel({ onImport, existingKeys, hint }) {
           </label>
         )}
       </div>
-      <div style={{ overflowX: 'auto' }}>
+      <div className="tbl-wrap">
         <table className="tbl">
           <thead>
             <tr>{header.map((h, i) => <th key={i}>{String(h ?? '') || `(열 ${i + 1})`}</th>)}</tr>

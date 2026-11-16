@@ -83,7 +83,7 @@ export default function DataTab({ domain, state, setState, categories, setToast,
           </div>
         </div>
         {importOpen && <ImportPanel onImport={onImport} existingKeys={existingKeys} hint={hint} />}
-        {busy && <div className="banner" style={{ marginTop: 12, display: 'flex', gap: 8, alignItems: 'center' }}><span className="spinner dark" />{busy}</div>}
+        {busy && <div className="banner" style={{ marginTop: 12, marginBottom: 0, display: 'flex', gap: 8, alignItems: 'center' }}><span className="spinner dark" />{busy}</div>}
       </div>
 
       {txs.length > 0 && (

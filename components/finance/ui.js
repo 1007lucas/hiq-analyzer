@@ -1,12 +1,15 @@
 import { won, pct, monthLabel, shiftMonth, wonShort } from '../../lib/finance/format';
 
-export function StatTile({ label, value, tone, delta, deltaLabel, raw }) {
+// goodWhenUp: 수입·순이익처럼 증가가 긍정인 지표는 true
+export function StatTile({ label, value, tone, delta, deltaLabel, raw, goodWhenUp = false }) {
   let cls = 'val';
   if (tone === 'neg') cls += ' neg'; if (tone === 'pos') cls += ' pos';
   let d = null;
   if (delta !== undefined && delta !== null && Number.isFinite(delta)) {
-    const up = delta > 0;
-    d = <div className={`delta ${up ? 'up' : delta < 0 ? 'down' : ''}`}>{up ? '▲' : delta < 0 ? '▼' : '—'} {won(Math.abs(delta))} {deltaLabel || '전월 대비'}</div>;
+    const up = delta > 0, down = delta < 0;
+    const good = (up && goodWhenUp) || (down && !goodWhenUp);
+    const mood = !up && !down ? '' : good ? ' good' : ' bad';
+    d = <div className={`delta${mood}`}>{up ? '↑' : down ? '↓' : '—'} {won(Math.abs(delta))} <span style={{ fontWeight: 500, opacity: .8 }}>{deltaLabel || '전월 대비'}</span></div>;
   }
   return (
     <div className="stat">
@@ -55,8 +58,22 @@ export function MonthNav({ month, onChange }) {
   );
 }
 
-export function Empty({ children }) {
-  return <div className="note" style={{ padding: '18px 0', textAlign: 'center' }}>{children}</div>;
+const ICONS = {
+  inbox: <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16v12l-3 4H7l-3-4z" /><path d="M4 14h5l1 2h4l1-2h5" /></svg>,
+  users: <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20a6.5 6.5 0 0 1 13 0" /><circle cx="17" cy="9" r="2.5" /><path d="M16 15.5a5 5 0 0 1 5.5 4.5" /></svg>,
+  calendar: <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="18" height="16" rx="3" /><path d="M3 10h18M8 3v4M16 3v4" /></svg>,
+  target: <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="5" /><circle cx="12" cy="12" r="1.2" fill="currentColor" /></svg>,
+  repeat: <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 2l4 4-4 4" /><path d="M3 11V9a4 4 0 0 1 4-4h14" /><path d="M7 22l-4-4 4-4" /><path d="M21 13v2a4 4 0 0 1-4 4H3" /></svg>,
+};
+
+export function Empty({ children, icon = 'inbox', action, onAction }) {
+  return (
+    <div className="empty">
+      <div className="ic">{ICONS[icon] || ICONS.inbox}</div>
+      <p>{children}</p>
+      {action && <button className="btn btn-primary btn-sm" onClick={onAction} style={{ marginTop: 4 }}>{action}</button>}
+    </div>
+  );
 }
 
 export function copy(text, setToast) {

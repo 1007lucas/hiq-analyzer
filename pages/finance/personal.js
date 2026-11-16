@@ -41,10 +41,11 @@ export default function PersonalPage() {
 
   return (
     <FinanceLayout title="개인">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 10, marginBottom: 14 }}>
+      <div className="page-head">
         <div>
-          <h1 style={{ fontSize: 20, color: 'var(--navy)', fontWeight: 800 }}>👤 개인 전담 재무 비서</h1>
-          <p className="note">지출 분류 · 예산 · 저축 목표 · 구독 점검</p>
+          <div className="eyebrow">개인 전담</div>
+          <h1>개인 전담 재무 비서</h1>
+          <p className="sub">지출 분류 · 예산 · 저축 목표 · 구독 점검</p>
         </div>
         {(tab === 'report' || tab === 'budget') && <MonthNav month={month} onChange={setMonth} />}
       </div>
@@ -58,7 +59,7 @@ export default function PersonalPage() {
         ))}
       </div>
 
-      {tab === 'report' && <Report state={state} month={month} setToast={setToast} />}
+      {tab === 'report' && <Report state={state} month={month} setToast={setToast} onGoData={() => setTab('data')} />}
       {tab === 'budget' && <Budget state={state} setState={setState} month={month} />}
       {tab === 'goals' && <Goals state={state} setState={setState} setToast={setToast} />}
       {tab === 'subs' && <Subs state={state} setState={setState} setToast={setToast} />}
@@ -72,7 +73,7 @@ export default function PersonalPage() {
 }
 
 /* ───────────── 월 리포트 ───────────── */
-function Report({ state, month, setToast }) {
+function Report({ state, month, setToast, onGoData }) {
   const [ai, setAi] = useState('');
   const [busy, setBusy] = useState(false);
   const txs = spendTxs(state.txs || []);
@@ -109,15 +110,15 @@ function Report({ state, month, setToast }) {
   };
 
   if (!(state.txs || []).length) {
-    return <div className="card"><Empty>아직 거래내역이 없습니다. <b>거래내역</b> 탭에서 은행·카드 파일을 가져오세요.</Empty></div>;
+    return <div className="card"><Empty action="거래내역 가져오기" onAction={onGoData}>아직 거래내역이 없습니다. 은행·카드 파일을 가져오면 지출이 자동으로 분류되고 월 리포트가 만들어집니다.</Empty></div>;
   }
 
   return (
     <>
-      <div className="grid g4" style={{ marginBottom: 20 }}>
-        <StatTile label="수입" value={cur.incomeTotal} tone="pos" delta={cur.incomeTotal - prev.incomeTotal} />
+      <div className="stats">
+        <StatTile label="수입" value={cur.incomeTotal} tone="pos" delta={cur.incomeTotal - prev.incomeTotal} goodWhenUp />
         <StatTile label="지출" value={cur.expenseTotal} delta={cur.expenseTotal - prev.expenseTotal} />
-        <StatTile label="순저축" value={cur.net} tone={cur.net < 0 ? 'neg' : 'pos'} delta={cur.net - prev.net} />
+        <StatTile label="순저축" value={cur.net} tone={cur.net < 0 ? 'neg' : 'pos'} delta={cur.net - prev.net} goodWhenUp />
         <StatTile label="저축률" raw={savingRate === null ? '-' : `${savingRate}%`} delta={null} />
       </div>
       {savedTransfers > 0 && <div className="banner ok">이번 달 적금·투자 계좌로 이체한 금액 {won(savedTransfers)} — 지출이 아니라 저축으로 분류되어 순저축에 포함됩니다.</div>}
@@ -133,7 +134,7 @@ function Report({ state, month, setToast }) {
         <div className="card">
           <div className="card-title"><span>전월 대비 변화</span><small>변동 큰 순</small></div>
           {!changes.length ? <Empty>비교할 전월 데이터가 없습니다.</Empty> : (
-            <table className="tbl">
+            <div className="tbl-wrap"><table className="tbl">
               <thead><tr><th>카테고리</th><th className="num">전월</th><th className="num">이번 달</th><th className="num">변화</th></tr></thead>
               <tbody>
                 {changes.map((c) => (
@@ -145,7 +146,7 @@ function Report({ state, month, setToast }) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           )}
           {fixedMonthly > 0 && <p className="note" style={{ marginTop: 12 }}>고정지출·구독 월 환산 <b>{won(fixedMonthly)}</b> ({recurring.length}건) — 구독 탭에서 점검</p>}
         </div>
@@ -186,7 +187,7 @@ function Budget({ state, setState, month }) {
 
   return (
     <>
-      <div className="grid g4" style={{ marginBottom: 20 }}>
+      <div className="stats">
         <StatTile label="월 예산 합계" value={totalBudget} />
         <StatTile label="이번 달 지출" value={totalSpent} tone={totalBudget && totalSpent > totalBudget ? 'neg' : undefined} />
         <StatTile label="남은 예산" value={totalBudget - totalSpent} tone={totalBudget - totalSpent < 0 ? 'neg' : 'pos'} />
@@ -198,6 +199,7 @@ function Budget({ state, setState, month }) {
           <button className="btn btn-sm btn-ghost" onClick={fillFromAvg} disabled={!Object.keys(prev3).length}>최근 3개월 평균으로 채우기</button>
         </div>
         <p className="note" style={{ marginBottom: 10 }}>진도 대비: 지출 비율 / 오늘까지 쓰는 것이 적정한 비율. 80% 이상은 노란색, 초과는 빨간색으로 표시됩니다.</p>
+        <div className="tbl-wrap">
         <table className="tbl">
           <thead><tr><th>카테고리</th><th className="num">월 예산</th><th className="num">3개월 평균</th><th className="num">사용</th><th style={{ width: '30%' }}>사용률</th><th className="num">남음</th></tr></thead>
           <tbody>
@@ -212,8 +214,8 @@ function Budget({ state, setState, month }) {
                   <td className="num muted">{prev3[cat] ? won(prev3[cat]) : '-'}</td>
                   <td className="num">{won(s)}</td>
                   <td>
-                    <div className="trk" style={{ height: 10, background: 'var(--graylt)', position: 'relative' }}>
-                      <div className={`bar ${cls}`} style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${b ? Math.min(100, r * 100) : 0}%`, background: cls === 'over' ? 'var(--status-bad)' : cls === 'warn' ? 'var(--status-warn)' : 'var(--seq-450)', borderRadius: '0 4px 4px 0' }} />
+                    <div className="trk" style={{ height: 8, background: 'var(--graylt)', position: 'relative', borderRadius: 999 }}>
+                      <div className={`bar ${cls}`} style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${b ? Math.min(100, r * 100) : 0}%`, background: cls === 'over' ? 'var(--status-bad)' : cls === 'warn' ? 'var(--status-warn)' : 'var(--seq-450)', borderRadius: 999 }} />
                     </div>
                     {b ? <span className="note">{pct(s, b)}%{r > 1 ? ' · 초과' : ''}</span> : null}
                   </td>
@@ -223,6 +225,7 @@ function Budget({ state, setState, month }) {
             })}
           </tbody>
         </table>
+        </div>
       </div>
     </>
   );
@@ -257,21 +260,21 @@ function Goals({ state, setState, setToast }) {
 
   return (
     <>
-      <div className="grid g3" style={{ marginBottom: 20 }}>
+      <div className="stats c3">
         <StatTile label="목표 합계" value={goals.reduce((a, g) => a + g.target, 0)} />
         <StatTile label="매월 필요 저축액" value={Math.round(needTotal)} tone={avgNet !== null && needTotal > avgNet ? 'neg' : undefined} />
         <StatTile label="최근 3개월 평균 순저축" value={avgNet} tone={avgNet < 0 ? 'neg' : 'pos'} raw={avgNet === null ? '데이터 없음' : undefined} />
       </div>
       <div className="card">
         <div className="card-title"><span>저축 목표</span></div>
-        {!goals.length ? <Empty>목표를 추가하세요. 기한을 넣으면 매월 필요한 저축액을 계산합니다.</Empty> : (
+        {!goals.length ? <Empty icon="target">목표를 추가하세요. 기한을 넣으면 매월 필요한 저축액을 계산합니다.</Empty> : (
           <div className="meter-list" style={{ gap: 16 }}>
             {goals.map((g) => {
               const ml = monthsLeft(g.deadline);
               const need = ml ? Math.max(0, g.target - g.current) / ml : null;
               const done = g.current >= g.target;
               return (
-                <div key={g.id} style={{ borderBottom: '1px solid var(--graylt)', paddingBottom: 12 }}>
+                <div key={g.id} className="list-row" style={{ gridTemplateColumns: '1fr', padding: '4px 0 16px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
                     <div><b>{g.name}</b> {done && <span className="chip green">달성</span>} <span className="note">{g.deadline ? `${g.deadline}까지 · ${ml}개월 남음` : '기한 없음'}</span></div>
                     <div className="btn-row">
@@ -283,8 +286,8 @@ function Goals({ state, setState, setToast }) {
                       <button className="btn btn-sm btn-ghost" onClick={() => del(g.id)}>✕</button>
                     </div>
                   </div>
-                  <div className="trk" style={{ height: 10, background: 'var(--graylt)', margin: '8px 0 4px', position: 'relative' }}>
-                    <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${Math.min(100, pct(g.current, g.target))}%`, background: done ? 'var(--status-good)' : 'var(--seq-450)', borderRadius: '0 4px 4px 0' }} />
+                  <div className="trk" style={{ height: 8, background: 'var(--graylt)', margin: '10px 0 6px', position: 'relative', borderRadius: 999 }}>
+                    <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${Math.min(100, pct(g.current, g.target))}%`, background: done ? 'var(--status-good)' : 'var(--seq-450)', borderRadius: 999 }} />
                   </div>
                   <div className="note">{pct(g.current, g.target)}% 달성 · 남은 금액 {won(Math.max(0, g.target - g.current))}{need !== null && !done ? ` · 매월 ${won(Math.ceil(need))} 필요` : ''}{need !== null && avgNet !== null && !done ? (need > avgNet ? ' · ⚠ 최근 평균 순저축보다 많음' : ' · ✓ 현재 저축 속도로 가능') : ''}</div>
                 </div>
@@ -292,12 +295,15 @@ function Goals({ state, setState, setToast }) {
             })}
           </div>
         )}
-        <div className="grid g4" style={{ marginTop: 16, alignItems: 'end' }}>
+        <div className="panel">
+        <div className="panel-title">목표 추가</div>
+        <div className="grid g4" style={{ alignItems: 'end' }}>
           <div className="field"><label className="fl">목표 이름 *</label><input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="비상금 / 여행 / 전세 보증금" /></div>
           <div className="field"><label className="fl">목표 금액 *</label><input type="number" value={form.target} onChange={(e) => setForm({ ...form, target: e.target.value })} placeholder="5000000" /></div>
           <div className="field"><label className="fl">현재 모은 금액</label><input type="number" value={form.current} onChange={(e) => setForm({ ...form, current: e.target.value })} placeholder="0" /></div>
           <div className="field"><label className="fl">기한(월)</label><input type="month" value={form.deadline} onChange={(e) => setForm({ ...form, deadline: e.target.value })} /></div>
           <button className="btn btn-primary" onClick={add}>+ 목표 추가</button>
+        </div>
         </div>
       </div>
     </>
@@ -316,7 +322,7 @@ function Subs({ state, setState, setToast }) {
 
   return (
     <>
-      <div className="grid g3" style={{ marginBottom: 20 }}>
+      <div className="stats c3">
         <StatTile label="활성 반복 결제" raw={`${active.length}건`} />
         <StatTile label="월 환산 고정지출" value={monthly} />
         <StatTile label="해지 검토 시 월 절약" value={saving} tone="pos" />
@@ -327,8 +333,8 @@ function Subs({ state, setState, setToast }) {
           {review.length > 0 && <button className="btn-copy" onClick={() => copy(review.map((i) => `${i.name} ${won(i.amount)}/${INTERVAL_LABEL[i.interval]}`).join('\n'), setToast)}>해지 목록 복사</button>}
         </div>
         <p className="note" style={{ marginBottom: 10 }}>같은 가맹점에서 비슷한 금액이 매주·매월·매년 간격으로 2회 이상 결제된 항목입니다. 2개월 이상 거래내역이 있어야 탐지됩니다. 최근 결제가 없으면 '중단됨'으로 표시합니다.</p>
-        {!items.length ? <Empty>반복 결제를 찾지 못했습니다. 거래내역을 2개월 이상 가져오면 탐지됩니다.</Empty> : (
-          <div style={{ overflowX: 'auto' }}>
+        {!items.length ? <Empty icon="repeat">반복 결제를 찾지 못했습니다. 거래내역을 2개월 이상 가져오면 탐지됩니다.</Empty> : (
+          <div className="tbl-wrap">
             <table className="tbl">
               <thead><tr><th>가맹점</th><th>카테고리</th><th className="num">결제액</th><th>주기</th><th className="num">월 환산</th><th className="num">횟수</th><th>최근 결제</th><th>상태</th><th>판단</th></tr></thead>
               <tbody>

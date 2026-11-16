@@ -51,11 +51,12 @@ export default function AcademyPage() {
 
   return (
     <FinanceLayout title="학원">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 10, marginBottom: 14 }}>
+      <div className="page-head">
         <div>
-          <h1 style={{ fontSize: 20, color: 'var(--navy)', fontWeight: 800 }}>🏫 학원 전담 재무 비서</h1>
-          <p className="note">
-            <input type="text" value={state.profile.name} onChange={(e) => setState((s) => ({ ...s, profile: { ...s.profile, name: e.target.value } }))} style={{ padding: '2px 6px', fontSize: 12.5, width: 160 }} /> 의 수납·손익·급여·세무를 한 곳에서
+          <div className="eyebrow">학원 전담</div>
+          <h1>학원 전담 재무 비서</h1>
+          <p className="sub">
+            <input type="text" value={state.profile.name} onChange={(e) => setState((s) => ({ ...s, profile: { ...s.profile, name: e.target.value } }))} style={{ padding: '4px 8px', fontSize: 13, width: 170, borderRadius: 8 }} /> 의 수납·손익·급여·세무를 한 곳에서
           </p>
         </div>
         {tab !== 'tax' && tab !== 'data' && <MonthNav month={month} onChange={setMonth} />}
@@ -72,7 +73,7 @@ export default function AcademyPage() {
         ))}
       </div>
 
-      {tab === 'dash' && <Dashboard state={state} month={month} isIncome={isIncome} setToast={setToast} />}
+      {tab === 'dash' && <Dashboard state={state} month={month} isIncome={isIncome} setToast={setToast} onGoData={() => setTab('data')} />}
       {tab === 'tuition' && <Tuition state={state} setState={setState} month={month} setToast={setToast} />}
       {tab === 'payroll' && <Payroll state={state} setState={setState} month={month} setToast={setToast} />}
       {tab === 'tax' && <TaxCalendar state={state} setState={setState} />}
@@ -86,7 +87,7 @@ export default function AcademyPage() {
 }
 
 /* ───────────── 월 손익 ───────────── */
-function Dashboard({ state, month, isIncome, setToast }) {
+function Dashboard({ state, month, isIncome, setToast, onGoData }) {
   const [ai, setAi] = useState('');
   const [busy, setBusy] = useState(false);
   // 카드대금·대표자 계좌 이동 등 내부거래는 손익에서 제외 (카드 이용내역을 함께 올리면 지출이 중복되지 않음)
@@ -120,15 +121,15 @@ function Dashboard({ state, month, isIncome, setToast }) {
   };
 
   if (!(state.txs || []).length) {
-    return <div className="card"><Empty>아직 거래내역이 없습니다. <b>거래내역</b> 탭에서 학원 계좌 파일을 가져오세요. 학생을 등록하면 수납률도 함께 표시됩니다.</Empty></div>;
+    return <div className="card"><Empty action="거래내역 가져오기" onAction={onGoData}>아직 거래내역이 없습니다. 학원 계좌 파일을 가져오면 월 손익이 자동으로 정리됩니다. 학생을 등록하면 수납률도 함께 표시됩니다.</Empty></div>;
   }
 
   return (
     <>
-      <div className="grid g4" style={{ marginBottom: 20 }}>
-        <StatTile label="수입" value={cur.incomeTotal} tone="pos" delta={cur.incomeTotal - prev.incomeTotal} />
+      <div className="stats">
+        <StatTile label="수입" value={cur.incomeTotal} tone="pos" delta={cur.incomeTotal - prev.incomeTotal} goodWhenUp />
         <StatTile label="지출" value={cur.expenseTotal} delta={cur.expenseTotal - prev.expenseTotal} />
-        <StatTile label="순이익" value={cur.net} tone={cur.net < 0 ? 'neg' : 'pos'} delta={cur.net - prev.net} />
+        <StatTile label="순이익" value={cur.net} tone={cur.net < 0 ? 'neg' : 'pos'} delta={cur.net - prev.net} goodWhenUp />
         <StatTile label="수강료 수납률" raw={active.length ? `${pct(paid, active.length)}%` : '-'} delta={null} />
       </div>
       <div className="card">
@@ -238,7 +239,7 @@ function Tuition({ state, setState, month, setToast }) {
 
   return (
     <>
-      <div className="grid g4" style={{ marginBottom: 20 }}>
+      <div className="stats">
         <StatTile label="등록 학생" raw={`${active.length}명`} />
         <StatTile label="수납 완료" raw={`${paidList.length}명 · ${pct(paidList.length, active.length)}%`} />
         <StatTile label="수납 금액" value={collected} tone="pos" />
@@ -252,8 +253,8 @@ function Tuition({ state, setState, month, setToast }) {
             <button className="btn btn-sm btn-primary" onClick={autoMatch} disabled={!unpaid.length}>입금 내역 자동 대조</button>
           </div>
         </div>
-        {!students.length ? <Empty>아래에서 학생을 등록하세요. 등록 후 <b>입금 내역 자동 대조</b>를 누르면 거래내역의 입금자명과 비교해 납부를 자동 체크합니다.</Empty> : (
-          <div style={{ overflowX: 'auto' }}>
+        {!students.length ? <Empty icon="users">아래에서 학생을 등록하세요. 등록 후 입금 내역 자동 대조를 누르면 거래내역의 입금자명과 비교해 납부를 자동 체크합니다.</Empty> : (
+          <div className="tbl-wrap">
             <table className="tbl">
               <thead><tr><th>학생</th><th>보호자</th><th>반</th><th className="num">수강료</th><th>기한</th><th>상태</th><th>입금 정보</th><th></th></tr></thead>
               <tbody>
@@ -266,7 +267,7 @@ function Tuition({ state, setState, month, setToast }) {
                       <td><input type="text" value={s.parentName || ''} placeholder="입금자명" onChange={(e) => updStudent(s.id, { parentName: e.target.value })} style={{ width: 90 }} /></td>
                       <td><input type="text" value={s.className || ''} onChange={(e) => updStudent(s.id, { className: e.target.value })} style={{ width: 80 }} /></td>
                       <td className="num"><input type="number" value={s.fee} onChange={(e) => updStudent(s.id, { fee: Number(e.target.value) })} style={{ width: 100, textAlign: 'right' }} /></td>
-                      <td><input type="number" value={s.dueDay} min={1} max={31} onChange={(e) => updStudent(s.id, { dueDay: Number(e.target.value) })} style={{ width: 50 }} />일</td>
+                      <td style={{ whiteSpace: 'nowrap' }}><input type="number" value={s.dueDay} min={1} max={31} onChange={(e) => updStudent(s.id, { dueDay: Number(e.target.value) })} style={{ width: 50 }} />일</td>
                       <td>
                         {s.active === false ? <span className="chip gray">휴원</span>
                           : p?.paid ? <span className="chip green">납부</span>
@@ -289,7 +290,9 @@ function Tuition({ state, setState, month, setToast }) {
             </table>
           </div>
         )}
-        <div className="grid g4" style={{ marginTop: 16, alignItems: 'end' }}>
+        <div className="panel">
+        <div className="panel-title">학생 추가</div>
+        <div className="grid g4" style={{ alignItems: 'end' }}>
           <div className="field"><label className="fl">학생 이름 *</label><input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
           <div className="field"><label className="fl">보호자(입금자명)</label><input type="text" value={form.parentName} onChange={(e) => setForm({ ...form, parentName: e.target.value })} /></div>
           <div className="field"><label className="fl">반</label><input type="text" value={form.className} onChange={(e) => setForm({ ...form, className: e.target.value })} placeholder="고2 내신A" /></div>
@@ -297,6 +300,7 @@ function Tuition({ state, setState, month, setToast }) {
           <div className="field"><label className="fl">납부 기한(일)</label><input type="number" value={form.dueDay} onChange={(e) => setForm({ ...form, dueDay: e.target.value })} placeholder="25" /></div>
           <div className="field"><label className="fl">연락처(선택)</label><input type="text" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
           <button className="btn btn-primary" onClick={addStudent}>+ 학생 추가</button>
+        </div>
         </div>
       </div>
 
@@ -313,7 +317,7 @@ function Tuition({ state, setState, month, setToast }) {
             </div>
           </div>
           {unpaid.map((s) => (
-            <div key={s.id} style={{ borderBottom: '1px solid var(--graylt)', padding: '10px 0' }}>
+            <div key={s.id} className="list-row" style={{ gridTemplateColumns: '1fr' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
                 <b>{s.name}</b> <span className="note">{s.className} · {won(s.fee)}{s.phone ? ` · ${s.phone}` : ''}</span>
                 <div className="btn-row">
@@ -321,7 +325,7 @@ function Tuition({ state, setState, month, setToast }) {
                   <button className="btn-copy" onClick={() => copy(aiMsg[s.id] || template(s), setToast)}>복사</button>
                 </div>
               </div>
-              <div style={{ fontSize: 13.5, background: 'var(--paper)', padding: '8px 12px', whiteSpace: 'pre-wrap' }}>{aiMsg[s.id] || template(s)}</div>
+              <div style={{ fontSize: 14, background: 'var(--paper)', border: '1px solid var(--border2)', borderRadius: 12, padding: '12px 14px', whiteSpace: 'pre-wrap', lineHeight: 1.7 }}>{aiMsg[s.id] || template(s)}</div>
             </div>
           ))}
         </div>
@@ -355,7 +359,7 @@ function Payroll({ state, setState, month, setToast }) {
 
   return (
     <>
-      <div className="grid g4" style={{ marginBottom: 20 }}>
+      <div className="stats">
         <StatTile label="총 지급액(세전)" value={totals.base} />
         <StatTile label="실지급 합계" value={totals.net} tone="pos" />
         <StatTile label="원천징수 합계" value={totals.withheld} />
@@ -377,8 +381,8 @@ function Payroll({ state, setState, month, setToast }) {
             <div className="note" style={{ gridColumn: '1/-1' }}>근로자 부담분 기준의 간이 추정입니다. 소득세는 간이세액표에 따라 다르므로 직접 입력하세요. 요율은 매년 바뀌니 확인 후 수정하세요.</div>
           </div>
         )}
-        {!list.length ? <Empty>아래에서 강사를 등록하세요. 시급제는 월별 시수를 입력하면 자동 계산됩니다.</Empty> : (
-          <div style={{ overflowX: 'auto' }}>
+        {!list.length ? <Empty icon="users">아래에서 강사를 등록하세요. 시급제는 월별 시수를 입력하면 자동 계산됩니다.</Empty> : (
+          <div className="tbl-wrap">
             <table className="tbl">
               <thead><tr><th>강사</th><th>형태</th><th>기준</th><th className="num">단가/월급</th><th className="num">시수</th><th className="num">추가 수당</th><th className="num">소득세(근로자)</th><th className="num">지급액</th><th className="num">공제</th><th className="num">실지급</th><th></th></tr></thead>
               <tbody>
@@ -413,7 +417,9 @@ function Payroll({ state, setState, month, setToast }) {
             </div>
           </div>
         )}
-        <div className="grid g4" style={{ marginTop: 16, alignItems: 'end' }}>
+        <div className="panel">
+        <div className="panel-title">강사 추가</div>
+        <div className="grid g4" style={{ alignItems: 'end' }}>
           <div className="field"><label className="fl">강사 이름 *</label><input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
           <div className="field"><label className="fl">고용 형태</label>
             <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}><option value="freelancer">프리랜서 (3.3%)</option><option value="employee">근로자 (4대보험)</option></select></div>
@@ -421,6 +427,7 @@ function Payroll({ state, setState, month, setToast }) {
             <select value={form.payMode} onChange={(e) => setForm({ ...form, payMode: e.target.value })}><option value="hourly">시급</option><option value="monthly">월급</option></select></div>
           <div className="field"><label className="fl">{form.payMode === 'hourly' ? '시급(원) *' : '월급(원) *'}</label><input type="number" value={form.rate} onChange={(e) => setForm({ ...form, rate: e.target.value })} placeholder={form.payMode === 'hourly' ? '40000' : '2500000'} /></div>
           <button className="btn btn-primary" onClick={add}>+ 강사 추가</button>
+        </div>
         </div>
       </div>
     </>
@@ -447,26 +454,26 @@ function TaxCalendar({ state, setState }) {
       <div className="card">
         <div className="card-title"><span>학원 설정</span><small>일정에 반영됩니다</small></div>
         <div className="btn-row" style={{ gap: 18 }}>
-          <label style={{ fontSize: 13 }}><input type="checkbox" checked={!!p.hasEmployees} onChange={(e) => setP({ hasEmployees: e.target.checked })} /> 4대보험 근로자 있음</label>
-          <label style={{ fontSize: 13 }}><input type="checkbox" checked={!!p.halfYearWithholding} onChange={(e) => setP({ halfYearWithholding: e.target.checked })} /> 원천세 반기납부 승인 사업자</label>
-          <label style={{ fontSize: 13 }}><input type="checkbox" checked={!!p.hasTaxableSales} onChange={(e) => setP({ hasTaxableSales: e.target.checked })} /> 교재 판매 등 과세 매출 있음(부가세 겸영)</label>
-          <label style={{ fontSize: 13 }}><input type="checkbox" checked={!!p.sincere} onChange={(e) => setP({ sincere: e.target.checked })} /> 성실신고확인 대상</label>
+          <label style={{ fontSize: 14 }}><input type="checkbox" checked={!!p.hasEmployees} onChange={(e) => setP({ hasEmployees: e.target.checked })} /> 4대보험 근로자 있음</label>
+          <label style={{ fontSize: 14 }}><input type="checkbox" checked={!!p.halfYearWithholding} onChange={(e) => setP({ halfYearWithholding: e.target.checked })} /> 원천세 반기납부 승인 사업자</label>
+          <label style={{ fontSize: 14 }}><input type="checkbox" checked={!!p.hasTaxableSales} onChange={(e) => setP({ hasTaxableSales: e.target.checked })} /> 교재 판매 등 과세 매출 있음(부가세 겸영)</label>
+          <label style={{ fontSize: 14 }}><input type="checkbox" checked={!!p.sincere} onChange={(e) => setP({ sincere: e.target.checked })} /> 성실신고확인 대상</label>
         </div>
         <p className="note" style={{ marginTop: 8 }}>학원(교육용역)은 부가가치세 면세사업자라 부가세 신고 대신 매년 2월 10일 <b>사업장현황신고</b>를 합니다. 아래 일정은 일반 기준이며, 토·일요일이면 다음 영업일로 표시했습니다(공휴일 미반영). 실제 의무는 세무사와 확인하세요.</p>
       </div>
 
       <div className="card">
         <div className="card-title"><span>다가오는 일정 <small>45일 이내</small></span></div>
-        {!upcoming.length ? <Empty>45일 이내 일정이 없습니다.</Empty> : upcoming.map((e, i) => {
+        {!upcoming.length ? <Empty icon="calendar">45일 이내 일정이 없습니다.</Empty> : upcoming.map((e, i) => {
           const d = daysBetween(today, e.date);
           return (
-            <div key={i} style={{ display: 'grid', gridTemplateColumns: '90px 1fr', gap: 12, padding: '10px 0', borderBottom: '1px solid var(--graylt)' }}>
+            <div key={i} className="list-row" style={{ gridTemplateColumns: '90px 1fr' }}>
               <div>
-                <div style={{ fontWeight: 800, color: d <= 7 ? 'var(--red)' : 'var(--navy)' }}>{d === 0 ? '오늘' : `D-${d}`}</div>
+                <div className={`dday${d <= 7 ? ' soon' : ''}`}>{d === 0 ? '오늘' : `D-${d}`}</div>
                 <div className="note">{e.date.slice(5).replace('-', '/')}</div>
               </div>
               <div>
-                <div style={{ fontWeight: 700 }}>{e.title} <span className="chip gray">{KIND_LABEL[e.kind]}</span></div>
+                <div style={{ fontWeight: 700, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>{e.title} <span className="chip gray">{KIND_LABEL[e.kind]}</span></div>
                 <div className="note">{e.desc}</div>
                 <div className="note" style={{ marginTop: 3 }}>준비: {e.docs.join(' · ')}</div>
               </div>
@@ -484,7 +491,7 @@ function TaxCalendar({ state, setState }) {
         </div>
         {Object.entries(byMonth).map(([ym, list]) => (
           <div key={ym} style={{ marginBottom: 12 }}>
-            <div style={{ fontWeight: 800, color: 'var(--navy)', fontSize: 13.5, marginBottom: 4 }}>{monthLabel(ym)}</div>
+            <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 6, color: 'var(--ink2)' }}>{monthLabel(ym)}</div>
             {list.map((e, i) => (
               <div key={i} style={{ display: 'grid', gridTemplateColumns: '54px 1fr', gap: 10, fontSize: 13, padding: '4px 0', opacity: e.date < today ? 0.55 : 1 }}>
                 <span style={{ fontWeight: 700 }}>{Number(e.date.slice(8))}일</span>

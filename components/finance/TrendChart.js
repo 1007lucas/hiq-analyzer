@@ -20,8 +20,8 @@ export default function TrendChart({ data, height = 180 }) {
       <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: 'block', overflow: 'visible' }} onMouseLeave={() => setHover(null)}>
         {ticks.map((t, i) => (
           <g key={i}>
-            <line x1={padL} x2={W - padR} y1={y(t)} y2={y(t)} stroke="#e5e7eb" strokeWidth="1" />
-            <text x={padL - 6} y={y(t) + 4} fontSize="10" textAnchor="end" fill="#6b7280">{wonShort(t)}</text>
+            <line x1={padL} x2={W - padR} y1={y(t)} y2={y(t)} stroke="#EEF0F3" strokeWidth="1" />
+            <text x={padL - 6} y={y(t) + 4} fontSize="10" textAnchor="end" fill="#8B95A1">{wonShort(t)}</text>
           </g>
         ))}
         {data.map((d, i) => {
@@ -32,12 +32,12 @@ export default function TrendChart({ data, height = 180 }) {
           ];
           return (
             <g key={d.month} onMouseEnter={() => setHover({ i, cx })}>
-              <rect x={cx - groupW / 2} y={padT} width={groupW} height={innerH} fill={hover?.i === i ? 'rgba(31,56,100,.05)' : 'transparent'} />
+              <rect x={cx - groupW / 2} y={padT} width={groupW} height={innerH} fill={hover?.i === i ? 'rgba(59,108,246,.06)' : 'transparent'} rx="8" />
               {bars.map((b) => {
                 const h = Math.max(0, innerH - (y(b.v) - padT));
-                return <rect key={b.k} x={b.x} y={y(b.v)} width={barW} height={h} fill={b.c} rx={h > 4 ? 3 : 0} />;
+                return <rect key={b.k} x={b.x} y={y(b.v)} width={barW} height={h} fill={b.c} rx={h > 6 ? 4 : 0} />;
               })}
-              <text x={cx} y={H - 8} fontSize="11" textAnchor="middle" fill="#6b7280">{d.month.slice(2).replace('-', '.')}</text>
+              <text x={cx} y={H - 8} fontSize="11" textAnchor="middle" fill="#8B95A1">{d.month.slice(2).replace('-', '.')}</text>
             </g>
           );
         })}

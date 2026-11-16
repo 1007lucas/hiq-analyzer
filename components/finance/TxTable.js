@@ -29,7 +29,7 @@ export default function TxTable({ txs, categories, onChangeCategory, onDelete, p
         </select>
         <span className="note">{filtered.length}건 · 합계 {won(sum, { plus: true })}</span>
       </div>
-      <div style={{ overflowX: 'auto' }}>
+      <div className="tbl-wrap">
         <table className="tbl">
           <thead><tr><th>날짜</th><th>내용</th><th className="num">금액</th><th>카테고리</th><th>근거</th><th></th></tr></thead>
           <tbody>
