@@ -3,8 +3,8 @@
 config.toml
 
 # 실행 중 생기는 파일 (상태 DB, 토큰 캐시, 시세 캐시, 로그, 리포트)
-data/
-reports/
+/data/
+/reports/
 *.db
 *.db-wal
 *.db-shm

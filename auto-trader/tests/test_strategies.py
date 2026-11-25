@@ -806,7 +806,7 @@ def test_every_strategy_produces_both_entries_and_exits_on_random_data(name):
             for end in range(strategy.warmup, len(bars) + 1):
                 history = bars[:end]
                 entries += strategy.plan(history, None).entry is not None
-                exits += strategy.plan(history, holding(history, 3)).exit is not None
+                exits += strategy.plan(history, holding(history, min(3, len(history)))).exit is not None
     assert entries > 10 and exits > 10
 
 
@@ -976,11 +976,11 @@ def test_close_mode_volatility_breakout_never_holds_overnight():
     assert core.positions == {}
     orders = core.store.orders()
     assert orders and len(orders) % 2 == 0
-    for buy, sell in zip(orders[::2], orders[1::2]):
-        # 종목별로 '매수 → 같은 날 매도'가 짝을 이룸 (손절이든 종가 청산이든 당일에 끝남)
-        assert buy["side"] == "buy" and buy["reason"].startswith("돌파 매수(목표가 ")
     for symbol in SYMBOLS:
+        # 종목별로 '매수 → 같은 날 매도'가 짝을 이룸 (손절이든 종가 청산이든 당일에 끝남)
         symbol_orders = [order for order in orders if order["symbol"] == symbol]
+        assert len(symbol_orders) % 2 == 0
         for buy, sell in zip(symbol_orders[::2], symbol_orders[1::2]):
             assert (buy["side"], sell["side"]) == ("buy", "sell") and buy["day"] == sell["day"]
+            assert buy["reason"].startswith("돌파 매수(목표가 ")
     assert all(equity == cash for _, equity, cash in core.store.equity_history())   # 장 마감 후에는 항상 현금뿐

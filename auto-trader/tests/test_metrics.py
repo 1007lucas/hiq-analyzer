@@ -74,7 +74,8 @@ def test_cagr_annualises_by_calendar_days():
     assert m.cagr == pytest.approx(0.20015, abs=1e-5)           # 대략 연 20%
 
     loss = [(date(2022, 1, 3), 1_000_000.0), (date(2024, 1, 3), 640_000.0)]
-    assert compute_metrics(loss, [], 1_000_000).cagr == pytest.approx(-0.19990, abs=1e-5)
+    assert compute_metrics(loss, [], 1_000_000).cagr == pytest.approx(0.64 ** (365.25 / 730) - 1)
+    assert compute_metrics(loss, [], 1_000_000).cagr == pytest.approx(-0.20012, abs=1e-5)
 
 
 def test_cagr_equals_total_return_for_spans_shorter_than_30_days():
@@ -283,7 +284,7 @@ def test_format_metrics_has_korean_labels_aligned_values_and_number_formats():
     assert len(lines) >= 15
 
     for label in ("기간", "초기 자금", "최종 평가금", "총수익률", "연환산수익률(CAGR)", "최대낙폭(MDD)",
-                  "변동성", "샤프지수", "거래횟수", "승률", "손익비", "평균 보유기간", "총 수수료", "총 거래세",
+                  "연환산 변동성", "샤프지수", "거래횟수", "승률", "손익비", "평균 보유기간", "총 수수료", "총 거래세",
                   "시장 노출도", "단순보유"):
         assert any(line.startswith(label) for line in lines), label
 
