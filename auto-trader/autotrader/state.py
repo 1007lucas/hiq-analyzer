@@ -150,7 +150,8 @@ class SqliteStore:
         if read_only:
             if not self.path.is_file():
                 raise FileNotFoundError(f"상태 DB 가 없습니다: {self.path}")
-            uri = f"file:{self.path.as_posix()}?mode=ro"
+            # as_uri() 가 공백·한글·# 같은 문자를 안전하게 인코딩해 줍니다 (Windows 경로 포함).
+            uri = f"{self.path.resolve().as_uri()}?mode=ro"
             self._db = sqlite3.connect(uri, uri=True, timeout=10, check_same_thread=False)
         else:
             self.path.parent.mkdir(parents=True, exist_ok=True)

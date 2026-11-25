@@ -422,3 +422,22 @@ def test_runs_multiple_days_and_sleeps_between(tmp_path):
     assert [(o["day"], o["side"], o["price"]) for o in rig.orders()] == [
         (MON.isoformat(), "buy", 10_000), (TUE.isoformat(), "sell", 10_300)]
     assert [d for d, _, _ in rig.store.equity_history()] == [MON, TUE]
+
+
+def test_end_of_day_uses_official_daily_close_and_ignores_late_quotes(tmp_path):
+    # 15:30 종가는 10,200 인데 그 뒤(시간외)에 현재가가 10,900 으로 바뀐 상황
+    paths = {MON: {"A": [("09:00", 10_000), ("15:30", 10_200), ("16:10", 10_900)]}}
+    rig = Rig(tmp_path, at(MON, 16, 15), paths)                       # 마감 45분 뒤에 봇을 켬
+    rig.core.positions["A"] = __import__("autotrader.models", fromlist=["Position"]).Position("A", 10, 10_000, date(2024, 3, 1), 10_000)
+    orig = rig.market.get_daily_bars
+    rig.market.get_daily_bars = lambda s, a, b: [Bar(MON, 10_000, 10_250, 9_950, 10_200, 500.0)] if a == b == MON else orig(s, a, b)
+    rig.trader.run(max_days=1)
+    assert rig.core.close_marks["A"] == (MON.isoformat(), 10_200)       # 일봉의 공식 종가를 기록
+    assert rig.core.positions["A"].highest_price == 10_250
+
+    # 일봉을 못 받았고 마감 후 25분이 지났으면 현재가를 종가로 쓰지 않음
+    rig2 = Rig(tmp_path / "b", at(MON, 16, 15), paths)
+    rig2.core.positions["A"] = __import__("autotrader.models", fromlist=["Position"]).Position("A", 10, 10_000, date(2024, 3, 1), 10_000)
+    rig2.market.daily_includes_today = False
+    rig2.trader.run(max_days=1)
+    assert "A" not in rig2.core.close_marks

@@ -778,3 +778,20 @@ def test_snapshot_from_saved_state_matches_live_snapshot(tmp_path):
     for key in ("capital", "cash", "equity", "positions", "plans", "day", "day_opened", "halted", "strategy"):
         assert offline[key] == live[key], key
     assert offline["positions"][0]["stop"] == pytest.approx(9_500)
+
+
+def test_read_only_store_works_with_awkward_paths_and_refuses_writes(tmp_path):
+    import sqlite3
+
+    folder = tmp_path / "내 문서 #1 100%" / "auto trader"
+    store = SqliteStore(folder / "state.db")
+    store.save_state({"cash": 1})
+    store.record_equity(D1, 100.0, 50.0)
+    store.close()
+    ro = SqliteStore(folder / "state.db", read_only=True)
+    assert ro.load_state() == {"cash": 1} and ro.equity_history() == [(D1, 100.0, 50.0)]
+    with pytest.raises(sqlite3.OperationalError):
+        ro.save_state({"cash": 2})
+    ro.close()
+    with pytest.raises(FileNotFoundError):
+        SqliteStore(folder / "missing.db", read_only=True)

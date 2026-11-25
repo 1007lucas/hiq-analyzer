@@ -69,6 +69,7 @@ class LiveTrader:
     END_DELAY = timedelta(minutes=5)             # 폐장 몇 분 뒤에 마감 처리할지
     END_GRACE = timedelta(minutes=60)            # 폐장 후 이 시간 안에 켜면 그날 마감 처리는 수행
     CLOSE_AUCTION = timedelta(minutes=10)        # 폐장 전 종가 단일가 시간 (이때는 즉시 체결이 안 됨)
+    CLOSE_QUOTE_VALID = timedelta(minutes=25)    # 폐장 후 이 시간까지만 '현재가 = 종가'로 인정 (이후엔 시간외 거래 가능)
     NOT_LIVE_ALERT_AFTER = timedelta(minutes=10) # 개장 시각이 이만큼 지나도 거래가 없으면 알림
     SLEEP_CHUNK = 20.0                           # 긴 대기 중에도 이 간격으로 깨어나 명령/정지 요청 확인
     QUOTE_FAIL_ALERT_POLLS = 30                  # 시세 조회가 연속으로 이만큼 실패하면 알림
@@ -224,15 +225,38 @@ class LiveTrader:
 
         # 5) 마감
         self._sleep_until(sess.close + self.END_DELAY)
+        closes, highs = self._official_closes(sess)
+        core.end_day(closes, highs)
+        self._daily_summary(sess)
+
+    def _official_closes(self, sess: Session) -> tuple[dict[str, float], dict[str, float]]:
+        """오늘의 종가와 고가. 일봉(공식 종가)을 우선하고, 없으면 마감 직후의 현재가를 씁니다.
+
+        마감 후 한참 지나서(시간외·애프터마켓 거래가 시작된 뒤) 현재가를 종가로 기록하면
+        다음 날 '권리 변동' 오탐이 날 수 있으므로, 그때는 현재가를 쓰지 않습니다.
+        """
         closes: dict[str, float] = {}
         highs: dict[str, float] = {}
-        if self._live_day == day:
-            for sym, q in self._quotes(self._tracked()).items():
+        missing: list[str] = []
+        for sym in self._tracked():
+            try:
+                bars = self.market.get_daily_bars(sym, sess.day, sess.day)
+            except BrokerError as e:
+                log.debug("종가 확인용 일봉 조회 실패 (%s): %s", sym, e)
+                bars = []
+            today = [b for b in bars if b.date == sess.day and b.close > 0 and b.volume > 0]
+            if today:
+                closes[sym] = today[-1].close
+                highs[sym] = today[-1].high
+                self._live_day = sess.day       # 오늘 날짜의 일봉이 있다 = 오늘 실제로 거래가 있었다
+            else:
+                missing.append(sym)
+        if missing and self._live_day == sess.day and self.clock.now() <= sess.close + self.CLOSE_QUOTE_VALID:
+            for sym, q in self._quotes(missing).items():
                 if q.price > 0 and q.open > 0:
                     closes[sym] = q.price
                     highs[sym] = max(q.high, q.price)
-        core.end_day(closes, highs)
-        self._daily_summary(sess)
+        return closes, highs
 
     def _try_open(self, sess: Session, entry_deadline: datetime) -> None:
         """실제로 장이 열렸는지 확인하고, 열렸으면 코어의 개장 처리를 실행합니다."""
