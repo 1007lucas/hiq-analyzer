@@ -24,6 +24,7 @@ from typing import Callable, Sequence
 
 from ..brokers.base import BrokerError, MarketData
 from ..models import Bar, now_kst
+from .providers import ProviderError
 from .store import CsvFormatError, clean_bars, read_csv, write_csv
 from .synthetic import generate_bars
 
@@ -126,7 +127,7 @@ def _fetch_one(
                 bars = kis.get_daily_bars(symbol, start, end)
             else:
                 bars = _provider(src)(symbol, start, end)
-        except (BrokerError, DataError, OSError) as e:
+        except (BrokerError, DataError, ProviderError, OSError) as e:
             errors.append(f"{src}: {e}")
             log.warning("%s 일봉 조회 실패 (%s): %s", symbol, src, e)
             continue

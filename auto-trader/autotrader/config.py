@@ -29,7 +29,7 @@ class ConfigError(ValueError):
 # --------------------------------------------------------------------------- #
 @dataclass(frozen=True)
 class StrategyConfig:
-    name: str = "volatility_breakout"
+    name: str = "sma_cross"
     params: Mapping[str, Any] = field(default_factory=dict)
 
 
@@ -393,6 +393,8 @@ def parse_dotenv(text: str) -> dict[str, str]:
         value = value.strip()
         if len(value) >= 2 and value[0] == value[-1] and value[0] in ("'", '"'):
             value = value[1:-1]
+        elif value.startswith("#"):
+            value = ""                      # KEY=   # 설명  ← 값 없이 주석만 있는 줄
         elif " #" in value:
             value = value.split(" #", 1)[0].rstrip()
         if key:
